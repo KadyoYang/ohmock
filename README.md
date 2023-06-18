@@ -23,6 +23,14 @@
 // ./src/zz_our_impls/에 [원하는 파일명].ts 파일 만들기
 // [원하는 파일명].ts 에 다음과 같이 클래스 정의 및 구현
 
+import {
+  FieldStatus,
+  Fields,
+  PlayerDescription,
+  Position2D,
+  OmPlayer,
+} from "./interface";
+
 export default class `[원하는 클래스 이름]` implements OmPlayer {
   getDescription(): PlayerDescription {
      // ~~ 구현
