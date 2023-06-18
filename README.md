@@ -1,34 +1,94 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+`This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app)`
 
-## Getting Started
+# 환경
 
-First, run the development server:
+- node v16 (nvm use 16) (v16.20.0)
+- npx 툴 존재
+
+<br />
+
+# 목차(구현자가 해야할 것)
+
+1. 오목 플레이어 구현 (\*필수)
+2. 오목 플레이어 유효성 테스트 (\*필수)
+3. 게임 실행 (선택)
+
+<br />
+<br />
+<br />
+
+## 1\_ 오목 플레이어 구현 (`\*필수`)
+
+```ts
+// ./src/zz_our_impls/에 [원하는 파일명].ts 파일 만들기
+// [원하는 파일명].ts 에 다음과 같이 클래스 정의 및 구현
+
+export default class `[원하는 클래스 이름]` implements OmPlayer {
+  getDescription(): PlayerDescription {
+     // ~~ 구현
+  }
+  async dropTheStone(
+    fieldsStatus: FieldStatus,
+    yourFlag: "O" | "X"
+  ): Promise<Position2D> {
+    // ~~ 구현
+  }
+}
+
+// 구현 후 ./src/zz_our_impls/index.ts 에 다음처럼 추가
+
+export { default as "원하는 이름" } from "./구현파일명.player.impl";
+```
+
+<br />
+
+## 2\_ 오목 플레이어 유효성 테스트 (`\*필수`)
+
+```ts
+// ./src/test/rulecheck.spec.ts 파일을 다음과 같이 수정
+
+import `원하는 이름` from "../zz_our_impls/구현파일명.player.impl"
+
+// 테스트하고자 하는 것을 위치
+const dstClass = `원하는 이름`;
+
+
+// 이후 npm run test
+// 또는 yarn test
+```
+
+<br />
+
+## 3\_ 게임 실행 (선택)
+
+`npm 또는 yarn 취향껏 사용하십시오`
+
+#### 개발 서버로 실행
 
 ```bash
 npm run dev
-# or
 yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### 프로덕션 서버로 실행(빠름)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+yarn build
+# 빌드 후 실행
+npm run start
+yarn start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+#### 게임 조작
 
-## Learn More
+```
+http://127.0.0.1:3000/ohmock 에 접속
 
-To learn more about Next.js, take a look at the following resources:
+하단에 플레이어 리스트를 클릭하면 플레이어 선택이 됩니다
+플레이어 선택 취소하려면 선택된 플레이어(커다란 노란색 네모) 클릭하면 됩니다
+중간에 숫자 입력하는 것은 바둑게임 진행 시간 텀입니다 default 1000ms(1sec)
+게임 진행은 플레이어 두명 선택하고 Drop the stone 버튼 누르면 게임시작됩니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+게임이 끝나면 상황판에 끝내기 글자를 클릭하면 다시 플레이어 선택으로 돌아갑니다
+```

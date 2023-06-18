@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { PlayerDescription } from "../player/om.common.dto";
+import { PlayerDescription } from "../player/om.player.interface";
 
 export const BigPlayerProfile: React.FC<{
   description?: PlayerDescription;

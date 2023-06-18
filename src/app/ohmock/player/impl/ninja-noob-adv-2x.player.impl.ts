@@ -3,8 +3,8 @@ import {
   Fields,
   PlayerDescription,
   Position2D,
-} from "../om.common.dto";
-import { OmPlayer } from "../om.player.interface";
+  OmPlayer,
+} from "../om.player.interface";
 
 /** 좀 발전한 하급 닌자 상대의 눈치를 보며 막기 시작한다 */
 export default class NinjaNoobAdvanced2X implements OmPlayer {

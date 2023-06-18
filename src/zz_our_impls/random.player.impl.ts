@@ -4,15 +4,15 @@ import {
   PlayerDescription,
   Position2D,
   OmPlayer,
-} from "../om.player.interface";
+} from "./interface";
 
 /** 하급 닌자 */
-export default class NinjaNoob implements OmPlayer {
+export default class RandomPlayer implements OmPlayer {
   count = 1;
   public getDescription(): PlayerDescription {
     return {
-      nickname: "컴퓨터_하급",
-      tactics: "랜덤으로 아무대나 둡니다. 행운은 언제나 그곳에",
+      nickname: "컴퓨터_랜덤",
+      tactics: "랜덤랜덤랜덤",
     };
   }
   public async dropTheStone(
@@ -20,7 +20,6 @@ export default class NinjaNoob implements OmPlayer {
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
     const position = this.getRandomPosition(fieldsStatus.fields);
-    console.log(this.count++);
     return position;
   }
 

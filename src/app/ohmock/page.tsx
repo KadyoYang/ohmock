@@ -1,8 +1,10 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import * as playerImpls from "./player/impl";
-import { OmPlayer } from "./player/om.player.interface";
 import { styled } from "styled-components";
+import * as playerImpls from "./player/impl";
+import * as ourPlayerImpls from "../../zz_our_impls";
+import { OmPlayer } from "./player/om.player.interface";
+
 import {
   BigPlayerProfile,
   SmallPlayerProfile,
@@ -12,13 +14,17 @@ import GameBoard from "./component/game-board";
 export default function OhMock() {
   console.log("ohmock refresh");
   const [begin, setBegin] = useState<boolean>(false);
+  const [sleepMs, setSleepMs] = useState<number>(1000);
   const [players, setPlayers] = useState<Array<OmPlayer>>([]);
 
   const [bPlayer, setBPlayer] = useState<OmPlayer | null>(null);
   const [wPlayer, setWPlayer] = useState<OmPlayer | null>(null);
 
   const playerInstances = useCallback(() => {
-    return Object.values(playerImpls).map((omClass) => new omClass());
+    return [
+      ...Object.values(playerImpls).map((omClass) => new omClass()),
+      ...Object.values(ourPlayerImpls).map((omClass) => new omClass()),
+    ];
   }, []);
   useEffect(() => {
     setPlayers(playerInstances);
@@ -50,6 +56,7 @@ export default function OhMock() {
         oPlayer={bPlayer}
         xPlayer={wPlayer}
         onGameEnd={() => setBegin(false)}
+        delayMs={sleepMs}
       />
     );
   }
@@ -87,6 +94,13 @@ export default function OhMock() {
           >
             {"Suffle"}
           </button>
+          <input
+            style={{ backgroundColor: "black" }}
+            type="number"
+            placeholder="sleep ms(default 1000)"
+            value={sleepMs}
+            onChange={(e) => setSleepMs(Number.parseInt(e.target.value))}
+          />
         </div>
 
         <BigPlayerProfile

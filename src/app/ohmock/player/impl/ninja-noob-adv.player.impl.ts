@@ -3,8 +3,8 @@ import {
   Fields,
   PlayerDescription,
   Position2D,
-} from "../om.common.dto";
-import { OmPlayer } from "../om.player.interface";
+  OmPlayer,
+} from "../om.player.interface";
 
 /** 좀 발전한 하급 닌자 */
 export default class NinjaNoobAdvanced implements OmPlayer {
