@@ -19,14 +19,8 @@ export default class CkyangPlayerImpl implements OmPlayer {
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
     const { fields, lastStonePosition } = fieldsStatus;
-    const myPointMap = this.makePointMap(
-      fields.length,
-      fields.length / fields[0].length
-    );
-    const enemyPointMap = this.makePointMap(
-      fields.length,
-      fields.length / fields[0].length
-    );
+    const myPointMap = this.makePointMap(fields.length, fields[0].length);
+    const enemyPointMap = this.makePointMap(fields.length, fields[0].length);
 
     // calc dot points
     this.clacDotPoints(fields, myPointMap, yourFlag);
@@ -50,9 +44,20 @@ export default class CkyangPlayerImpl implements OmPlayer {
           list.push({ x: xi, y: yi, point: myPointMap[yi][xi] });
       })
     );
-
-    list.sort((a, b) => a.point - b.point);
+    list.sort((a, b) => b.point - a.point);
+    // console.dir(list, { depth: null });
+    const printFields = (fields: number[][]): void => {
+      const yMax = fields.length;
+      const xMax = fields[0].length;
+      let line = "";
+      for (const y of fields) {
+        line += y.map((v) => String(v)).join(" ");
+        line += "\n";
+      }
+      console.log(line);
+    };
     // sort
+    printFields(enemyPointMap);
 
     return { x: list[0].x, y: list[0].y };
   }
@@ -60,10 +65,11 @@ export default class CkyangPlayerImpl implements OmPlayer {
   private makePointMap(yMax: number, xMax: number): number[][] {
     const pointMap: number[][] = [];
     // init pointMap
-    const yTemp = [];
     for (let y = 0; y < yMax; y++) {
-      for (let x = 0; x < xMax; x++) {}
-      yTemp.push(0);
+      const yTemp = [];
+      for (let x = 0; x < xMax; x++) {
+        yTemp.push(0);
+      }
       pointMap.push(yTemp);
     }
 
@@ -75,9 +81,11 @@ export default class CkyangPlayerImpl implements OmPlayer {
     targetMarker: "O" | "X"
   ): void {
     const yMax = pointMap.length;
-    const xMax = yMax / pointMap[0].length;
+    const xMax = pointMap[0].length;
     pointMap.forEach((y, yi) =>
       y.forEach((x, xi) => {
+        if (fields[yi][xi] === "") return;
+
         for (const direction of [
           { x: -1, y: 1 },
           { x: 0, y: 1 },
@@ -155,7 +163,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
           pointMap[linePointTargetMeta.position.y][
             linePointTargetMeta.position.x
           ] +=
-            (Math.abs(direction.x) + Math.abs(direction.y)) *
+            (Math.abs(direction.x) + Math.abs(direction.y) + 1) *
             (linePointTargetMeta.mode === "add" ? 1 : -1);
         } // the end of directions loop
       })
@@ -169,7 +177,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
     direction: Position2D
   ): { position: Position2D; mode: "add" | "sub" } | null {
     const yMax = fields.length;
-    const xMax = yMax / fields[0].length;
+    const xMax = fields[0].length;
 
     let currentX = initPosition.x + direction.x;
     let currentY = initPosition.y + direction.y;
