@@ -5,10 +5,6 @@ import { createNewFields, game } from "./test_util";
 // 테스트하고자 하는 것을 위치
 const dstClass = RandomRandomRandom;
 
-describe("test", () => {
-  it("test", () => {});
-});
-
 describe("오목 구현체 테스트", () => {
   it("두면 안되는 곳에 두지 않아야한다 [1회차]", async () => {
     async function check(): Promise<boolean> {
@@ -47,7 +43,8 @@ describe("오목 구현체 테스트", () => {
         }
         if (result.ruleViloator) {
           isRuleViolator = true;
-          console.error("룰 어기는 상황 발생");
+          throw new Error("룰 어기는 상황 발생");
+          
         }
 
         if (winner || isDraw || isRuleViolator) {
@@ -97,7 +94,7 @@ describe("오목 구현체 테스트", () => {
         }
         if (result.ruleViloator) {
           isRuleViolator = true;
-          console.error("룰 어기는 상황 발생");
+          throw new Error("룰 어기는 상황 발생");
         }
 
         if (winner || isDraw || isRuleViolator) {
@@ -147,7 +144,7 @@ describe("오목 구현체 테스트", () => {
         }
         if (result.ruleViloator) {
           isRuleViolator = true;
-          console.error("룰 어기는 상황 발생");
+          throw new Error("룰 어기는 상황 발생");
         }
 
         if (winner || isDraw || isRuleViolator) {
@@ -197,7 +194,7 @@ describe("오목 구현체 테스트", () => {
         }
         if (result.ruleViloator) {
           isRuleViolator = true;
-          console.error("룰 어기는 상황 발생");
+          throw new Error("룰 어기는 상황 발생");
         }
 
         if (winner || isDraw || isRuleViolator) {
