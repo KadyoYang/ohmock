@@ -66,6 +66,7 @@ const GameBoard: React.FC<{
         setTurn(!turn);
       } catch (err) {
         console.log("catchcatch");
+        console.error(err);
       } finally {
         await sleep(delayMs);
       }
