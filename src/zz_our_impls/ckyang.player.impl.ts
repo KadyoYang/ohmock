@@ -19,6 +19,15 @@ export default class CkyangPlayerImpl implements OmPlayer {
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
     const { fields, lastStonePosition } = fieldsStatus;
+
+    // 첫수일때는 가운데에 둔다
+    if (!lastStonePosition) {
+      return {
+        x: Math.floor(fields[0].length / 2),
+        y: Math.floor(fields.length / 2),
+      };
+    }
+
     const myPointMap = this.makePointMap(fields.length, fields[0].length);
     const enemyPointMap = this.makePointMap(fields.length, fields[0].length);
 
@@ -31,20 +40,39 @@ export default class CkyangPlayerImpl implements OmPlayer {
     this.clacLinePoints(fields, enemyPointMap, yourFlag === "O" ? "X" : "O");
 
     // makePositionToPriorityList
-    const list: Array<{ x: number; y: number; point: number }> = [];
+    const list: Array<{
+      x: number;
+      y: number;
+      point: number;
+      isMine: boolean;
+    }> = [];
     myPointMap.forEach((y, yi) =>
       y.forEach((x, xi) => {
         if (fields[yi][xi] === "")
-          list.push({ x: xi, y: yi, point: myPointMap[yi][xi] });
+          list.push({ x: xi, y: yi, point: myPointMap[yi][xi], isMine: true });
       })
     );
     enemyPointMap.forEach((y, yi) =>
       y.forEach((x, xi) => {
         if (fields[yi][xi] === "")
-          list.push({ x: xi, y: yi, point: enemyPointMap[yi][xi] });
+          list.push({
+            x: xi,
+            y: yi,
+            point: enemyPointMap[yi][xi],
+            isMine: false,
+          });
       })
     );
-    list.sort((a, b) => b.point - a.point);
+
+    // sort
+    list.sort((a, b) => {
+      if (b.point === a.point) {
+        if (b.isMine) return 1;
+        if (a.isMine) return -1;
+      }
+      return b.point - a.point;
+    });
+
     // console.dir(list, { depth: null });
     const printFields = (fields: number[][]): void => {
       const yMax = fields.length;
@@ -221,7 +249,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
       // targetFlag가 이어진다
       currentX += direction.x;
       currentY += direction.y;
-      count++;
+      count *= 2;
     }
   }
 }
