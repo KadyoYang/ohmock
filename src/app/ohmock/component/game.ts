@@ -1,4 +1,4 @@
-import { OmPlayer } from "../player/om.player.interface";
+import { OmPlayer, Position2D } from "../player/om.player.interface";
 import { checkWinningCondition, isFieldsFull } from "../util";
 import { FieldStatus } from "../player/om.player.interface";
 
@@ -20,9 +20,33 @@ export const game = async (
   let isDraw: boolean = false;
 
   // 선수에게 돌을 두라고 한다
-  const position = turn
-    ? await oPlayer.dropTheStone(JSON.parse(JSON.stringify(fieldsStatus)), "O")
-    : await xPlayer.dropTheStone(JSON.parse(JSON.stringify(fieldsStatus)), "X");
+  let position: Position2D = { x: -1, y: -1 };
+  try {
+    position = turn
+      ? await oPlayer.dropTheStone(
+          JSON.parse(JSON.stringify(fieldsStatus)),
+          "O"
+        )
+      : await xPlayer.dropTheStone(
+          JSON.parse(JSON.stringify(fieldsStatus)),
+          "X"
+        );
+  } catch (err) {
+    console.error(err);
+    console.error("돌을 두다가 갑자기 손이 빨라진 녀석 발생");
+
+    // 예외 발생 돌을 두다가 갑자기 손이 빨라지는 녀석
+    ruleViloator = turn ? "O" : "X";
+    return {
+      fieldsStatus: {
+        fields,
+        lastStonePosition: position,
+      },
+      winner,
+      ruleViloator,
+      isDraw,
+    };
+  }
 
   // runtime exception을 발생시키려고 하는 사람이 나왔을시
   // 규칙을 위반한 자가 나타났을 시 (빈 칸이 아닌곳에 돌을 둠)
