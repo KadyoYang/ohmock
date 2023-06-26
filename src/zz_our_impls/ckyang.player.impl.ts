@@ -82,12 +82,9 @@ export default class CkyangPlayerImpl implements OmPlayer {
         line += y.map((v) => String(v)).join(" ");
         line += "\n";
       }
-      console.log(line);
     };
     printFields(myPointMap);
     printFields(enemyPointMap);
-
-    console.dir({ a: list[0], b: list[1], c: list[2] }, { depth: null });
 
     return { x: list[0].x, y: list[0].y };
   }
