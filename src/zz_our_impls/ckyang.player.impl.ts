@@ -41,7 +41,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
     enemyPointMap.forEach((y, yi) =>
       y.forEach((x, xi) => {
         if (fields[yi][xi] === "")
-          list.push({ x: xi, y: yi, point: myPointMap[yi][xi] });
+          list.push({ x: xi, y: yi, point: enemyPointMap[yi][xi] });
       })
     );
     list.sort((a, b) => b.point - a.point);
@@ -56,13 +56,15 @@ export default class CkyangPlayerImpl implements OmPlayer {
       }
       console.log(line);
     };
-    // sort
+    printFields(myPointMap);
     printFields(enemyPointMap);
+
+    console.dir({ a: list[0], b: list[1], c: list[2] }, { depth: null });
 
     return { x: list[0].x, y: list[0].y };
   }
 
-  private makePointMap(yMax: number, xMax: number): number[][] {
+  public makePointMap(yMax: number, xMax: number): number[][] {
     const pointMap: number[][] = [];
     // init pointMap
     for (let y = 0; y < yMax; y++) {
@@ -75,7 +77,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
 
     return pointMap;
   }
-  private clacDotPoints(
+  public clacDotPoints(
     fields: Fields,
     pointMap: ReturnType<typeof this.makePointMap>,
     targetMarker: "O" | "X"
@@ -118,16 +120,18 @@ export default class CkyangPlayerImpl implements OmPlayer {
    *
    * 이어져 있는것 끝까지 가서 처리
    * */
-  private clacLinePoints(
+  public clacLinePoints(
     fields: Fields,
     pointMap: ReturnType<typeof this.makePointMap>,
     targetMarker: "O" | "X"
   ): void {
     // const enemyFlag = targetMarker === "O" ? "X" : "O";
-    // const yMax = pointMap.length;
-    // const xMax = yMax / pointMap[0].length;
-    pointMap.forEach((y, yi) =>
-      y.forEach((x, xi) => {
+    const yMax = pointMap.length;
+    const xMax = pointMap[0].length;
+
+    for (let yi = 0; yi < yMax; yi++) {
+      for (let xi = 0; xi < xMax; xi++) {
+        // console.log(yi, xi);
         for (const direction of [
           { x: -1, y: 1 },
           { x: 0, y: 1 },
@@ -138,7 +142,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
           { x: 0, y: -1 },
           { x: 1, y: -1 },
         ] as Position2D[]) {
-          if (fields[yi][xi] === "") return;
+          if (fields[yi][xi] === "") continue;
 
           // targetMarker가 아닌 것을 중심으로 처리할때는 -연산 적용
           // targetMarker인 것을 중심으로 처리할때는 +연산 적용
@@ -148,8 +152,7 @@ export default class CkyangPlayerImpl implements OmPlayer {
             direction
           );
 
-          if (linePointTargetMeta === null || linePointTargetMeta === undefined)
-            return;
+          if (!linePointTargetMeta) continue;
 
           // 가중치 구하지 않아야할 놈
           if (
@@ -158,24 +161,33 @@ export default class CkyangPlayerImpl implements OmPlayer {
             (targetMarker !== fields[yi][xi] &&
               linePointTargetMeta.mode === "add")
           )
-            return;
+            continue;
 
           pointMap[linePointTargetMeta.position.y][
             linePointTargetMeta.position.x
           ] +=
-            (Math.abs(direction.x) + Math.abs(direction.y) + 1) *
-            (linePointTargetMeta.mode === "add" ? 1 : -1);
+            linePointTargetMeta.mode === "add"
+              ? 3 + linePointTargetMeta.count
+              : -3; // *
+          // Math.abs(direction.x) +
+          // Math.abs(direction.y) +
+          // (linePointTargetMeta.mode === "add" ? 1 : -1);
         } // the end of directions loop
-      })
-    );
+      }
+    }
+    // pointMap.forEach((y, yi) =>
+    //   y.forEach((x, xi) => {
+
+    //   })
+    // );
     return;
   }
 
-  private getLinePointTargetMeta(
+  public getLinePointTargetMeta(
     fields: Fields,
     initPosition: Position2D,
     direction: Position2D
-  ): { position: Position2D; mode: "add" | "sub" } | null {
+  ): { position: Position2D; mode: "add" | "sub"; count: number } | null {
     const yMax = fields.length;
     const xMax = fields[0].length;
 
@@ -187,6 +199,9 @@ export default class CkyangPlayerImpl implements OmPlayer {
     const targetFlag = fields[currentY][currentX];
     const mode: "add" | "sub" = initFlag === targetFlag ? "add" : "sub";
 
+    // 이어지지않았다 첫장부터 꽝이다 더 이상 전진할 필요가 없어...
+    if (fields[currentY][currentX] === "") return null;
+    let count = 1;
     while (true) {
       // 인덱스 탈출시
       if (currentX < 0 || currentY < 0 || currentX >= xMax || currentY >= yMax)
@@ -196,15 +211,17 @@ export default class CkyangPlayerImpl implements OmPlayer {
         return {
           position: { x: currentX, y: currentY },
           mode,
+          count,
         };
       }
-      // 막힌 경우
+      // 원하던 놈이 이어지는게 아니다
       if (fields[currentY][currentX] !== targetFlag) {
         return null;
       }
       // targetFlag가 이어진다
       currentX += direction.x;
       currentY += direction.y;
+      count++;
     }
   }
 }
