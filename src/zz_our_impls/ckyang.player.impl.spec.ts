@@ -28,7 +28,7 @@ describe("ck 구현체 테스트", () => {
     player.clacLinePoints(fields, oPointMap, "O");
     player.clacLinePoints(fields, xPointMap, "X");
 
-    expect(oPointMap[0][3]).toEqual(11);
-    expect(xPointMap[1][3]).toEqual(11);
+    expect(oPointMap[0][3]).toEqual(12);
+    expect(xPointMap[1][3]).toEqual(12);
   });
 });
