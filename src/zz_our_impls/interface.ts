@@ -22,6 +22,10 @@ export interface Position2D {
   y: number;
 }
 
+/** 오목판 상황
+ *
+ * 첫수를 두는 경우 lastStonePosition이 null 또는 undefined 입니다
+ */
 export interface FieldStatus {
   fields: Fields;
   lastStonePosition?: Position2D;
@@ -32,7 +36,8 @@ export interface OmPlayer {
   /** 플레이어 소개정보를 반환한다 */
   getDescription(): PlayerDescription;
 
-  /** 오목판 정보를 받고 다음 수의 좌표값을 반환한다 */
+  /** 오목판 정보를 받고 다음 수의 좌표값을 반환한다
+   */
   dropTheStone(
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X"
