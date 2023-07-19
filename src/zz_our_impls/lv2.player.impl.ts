@@ -4,15 +4,14 @@ import {
   PlayerDescription,
   Position2D,
   OmPlayer,
-} from "../om.player.interface";
+} from "./interface";
 
 /** 좀 발전한 하급 닌자 */
-export default class NinjaNoobAdvanced implements OmPlayer {
+export default class Lv2Player implements OmPlayer {
   public getDescription(): PlayerDescription {
     return {
-      nickname: "컴퓨터_하급_조금발전",
-      tactics:
-        "저는 구역으로 나눠서 랜덤으로 둡니다. 저는 하급닌자와는 다릅니다",
+      nickname: "Lv_2",
+      tactics: "저는 구역으로 나눠서 랜덤으로 둡니다",
     };
   }
   public async dropTheStone(

@@ -6,12 +6,11 @@ import {
   OmPlayer,
 } from "./interface";
 
-export default class CkyangPlayerImpl implements OmPlayer {
+export default class Lv4Player implements OmPlayer {
   public getDescription(): PlayerDescription {
     return {
-      nickname: "ck yang the noobie",
-      tactics:
-        "가중치를 정해서. 둠. 점. 가중치. 선. 가중치. 밀집 형세를 활용. 신중하게 판단.",
+      nickname: "Lv_4",
+      tactics: "가중치를 계산하면서 둡니다.",
     };
   }
   public async dropTheStone(

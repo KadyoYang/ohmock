@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
-import * as playerImpls from "./player/impl";
 import * as ourPlayerImpls from "../../zz_our_impls";
 import { OmPlayer } from "./player/om.player.interface";
 
@@ -21,10 +20,7 @@ export default function OhMock() {
   const [wPlayer, setWPlayer] = useState<OmPlayer | null>(null);
 
   const playerInstances = useCallback(() => {
-    return [
-      ...Object.values(playerImpls).map((omClass) => new omClass()),
-      ...Object.values(ourPlayerImpls).map((omClass) => new omClass()),
-    ];
+    return [...Object.values(ourPlayerImpls).map((omClass) => new omClass())];
   }, []);
   useEffect(() => {
     setPlayers(playerInstances);

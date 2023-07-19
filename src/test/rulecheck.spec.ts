@@ -1,4 +1,4 @@
-import RandomRandomRandom from "../zz_our_impls/random.player.impl";
+import RandomRandomRandom from "../zz_our_impls/lv1.player.impl";
 import { Position2D } from "../zz_our_impls/interface";
 import { createNewFields, game } from "./test_util";
 
@@ -44,7 +44,6 @@ describe("오목 구현체 테스트", () => {
         if (result.ruleViloator) {
           isRuleViolator = true;
           throw new Error("룰 어기는 상황 발생");
-          
         }
 
         if (winner || isDraw || isRuleViolator) {

@@ -1,7 +1,7 @@
-import RandomRandomRandom from "../zz_our_impls/random.player.impl";
+import RandomRandomRandom from "../zz_our_impls/lv1.player.impl";
 import { Position2D } from "../zz_our_impls/interface";
 import { createNewFields, game } from "./test_util";
-import CkyangPlayerImpl from "../zz_our_impls/ckyang.player.impl";
+import CkyangPlayerImpl from "../zz_our_impls/lv4.player.impl";
 
 // 테스트하고자 하는 것을 위치
 const dstClass = CkyangPlayerImpl;

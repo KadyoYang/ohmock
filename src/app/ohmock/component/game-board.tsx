@@ -84,7 +84,7 @@ const GameBoard: React.FC<{
   return (
     <BoardWrapper>
       <StatusBoard>
-        <h4>상황판</h4>
+        <h4>상황판 - {stoneHistory.length} 수</h4>
         {winner && (
           <>
             <h1>

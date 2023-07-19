@@ -4,13 +4,13 @@ import {
   PlayerDescription,
   Position2D,
   OmPlayer,
-} from "../om.player.interface";
+} from "./interface";
 
 /** 좀 발전한 하급 닌자 상대의 눈치를 보며 막기 시작한다 */
-export default class NinjaNoobAdvanced2X implements OmPlayer {
+export default class Lv3Player implements OmPlayer {
   public getDescription(): PlayerDescription {
     return {
-      nickname: "컴퓨터_하급_조금발전2X",
+      nickname: "Lv_3",
       tactics: "저는 구역으로 나눠서 랜덤으로 두지만 상대의 눈치도 봅니다",
     };
   }
