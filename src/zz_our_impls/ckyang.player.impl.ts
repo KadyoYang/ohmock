@@ -6,6 +6,10 @@ import {
   OmPlayer,
 } from "./interface";
 
+/**
+ * 점, 선 가중치를 계산하여 둘만한 수를 가려내고
+ * 둘만한 수가 많을 경우 몇 수 앞을 둬서 괜찮을 수를 찾는다
+ */
 export default class CkYangPlayer implements OmPlayer {
   public getDescription(): PlayerDescription {
     return {
@@ -14,22 +18,31 @@ export default class CkYangPlayer implements OmPlayer {
     };
   }
 
+  /** 돌을 둔다 */
   public async dropTheStone(
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
-    /** 무승부값[4,5,6,7] 흑승값[8] 7이 안전하고 적절한듯하다. 최강은 쓰지않겠다 */
+    /** 몇 수 앞을 볼지 정하는 값
+     * 무승부값[4,5,6,7] 흑승값[8] 7이 안전하고 적절한듯하다. 최강은 쓰지않겠다
+     */
     const targetDepth = 7;
+
+    // getCriticalPositions 로 둘만한 곳을 찾아본다
     const positions = await this.getCriticalPositions(fieldsStatus, yourFlag);
+
+    // 둘만한 곳이 딱 한곳만 존재하면 바로 리턴한다
     if (positions.length === 1) {
       return positions[0];
     }
 
+    // 둘만한 곳이 여러개이면 각 수마다 점수를 매긴다
     const positionsWithPoint: Array<Position2D & { point: number }> = [];
     for (const position of positions) {
       const copiedFieldStatus = this.deepCopy(fieldsStatus);
       copiedFieldStatus.lastStonePosition = position;
       copiedFieldStatus.fields[position.y][position.x] = yourFlag;
+      // seeTheFuture로 점수를 구한다
       const point = await this.seeTheFuture(
         copiedFieldStatus,
         yourFlag,
@@ -40,13 +53,16 @@ export default class CkYangPlayer implements OmPlayer {
       positionsWithPoint.push({ x: position.x, y: position.y, point });
     }
 
+    // 점수 내림차순으로 정렬한다
     positionsWithPoint.sort((a, b) => {
       return b.point - a.point;
     });
 
+    // 가장 점수가 높은 수를 리턴한다
     return positionsWithPoint[0];
   }
 
+  /** 몇 수 앞을 보면서 점수를 계산하는 메소드 */
   public async seeTheFuture(
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X",
@@ -68,12 +84,12 @@ export default class CkYangPlayer implements OmPlayer {
 
     // 경우의 수를 둬본다
     for (const candidate of candidates) {
-      // 둬본다 승리? 패배? 숫자 합산
-      // const copiedFieldStatus = this.deepCopy(fieldsStatus);
+      // 둬본다 const copiedFieldStatus = this.deepCopy(fieldsStatus);
       const copiedFieldStatus = fieldsStatus;
       copiedFieldStatus.lastStonePosition = candidate;
       copiedFieldStatus.fields[candidate.y][candidate.x] = turn;
 
+      // 승리 조건 만족할 경우 점수를 더한다, 단 적이 이겼을 경우 -1 을 더한다
       if (
         this.checkWinningCondition(
           copiedFieldStatus.fields,
@@ -83,7 +99,7 @@ export default class CkYangPlayer implements OmPlayer {
       ) {
         point += yourFlag === turn ? 1 : -1;
       } else {
-        // 결과 안나오네? 더 둬봐
+        // 승리 조건을 만족하지 않을 경우 더 둬본다 재귀를 돈다
         point += await this.seeTheFuture(
           copiedFieldStatus,
           yourFlag,
@@ -98,6 +114,7 @@ export default class CkYangPlayer implements OmPlayer {
     return point;
   }
 
+  /** 두기 괜찮은 수들을 리턴한다 */
   public async getCriticalPositions(
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X"
@@ -115,6 +132,7 @@ export default class CkYangPlayer implements OmPlayer {
     }
 
     // 창
+    // 공격하면 반드시 이기는 경우는 바로 해당 수를 리턴한다
     const attackPositions =
       this.runEMERGENCYDefenceAttackSystemTestingToolToWinTheGameAndMoneyBack(
         JSON.parse(JSON.stringify(fields)),
@@ -126,6 +144,7 @@ export default class CkYangPlayer implements OmPlayer {
     }
 
     // 방패
+    // 방어하지않으면 반드시 지는 경우는 바로 해당 막는 수들을 리턴한다
     const defencePositions =
       this.runEMERGENCYDefenceAttackSystemTestingToolToWinTheGameAndMoneyBack(
         JSON.parse(JSON.stringify(fields)),
@@ -136,6 +155,7 @@ export default class CkYangPlayer implements OmPlayer {
       return defencePositions;
 
     // 선제 방패
+    // 상대방이 3개인 경우 막아야하는 수들을 리턴한다 (optional 이것은 제거해도된다, 제거할 경우 호전적으로 둔다)
     const earlyDefencePositions =
       this.runEMERGENCYDefenceAttackSystemTestingToolToWinTheGameAndMoneyBack(
         JSON.parse(JSON.stringify(fields)),
@@ -145,18 +165,19 @@ export default class CkYangPlayer implements OmPlayer {
     if (earlyDefencePositions && earlyDefencePositions.length > 0)
       return earlyDefencePositions;
 
+    // 내 관점, 상대 관점의 포인트맵 (19*19) 생성한다
     const myPointMap = this.makePointMap(fields.length, fields[0].length);
     const enemyPointMap = this.makePointMap(fields.length, fields[0].length);
 
-    // calc dot points
+    // 점 관점의 포인트를 계산한다
     this.clacDotPoints(fields, myPointMap, yourFlag);
     this.clacDotPoints(fields, enemyPointMap, yourFlag === "O" ? "X" : "O");
 
-    // calc line points // subtract point if enemy stone exists by side
+    // 선 관점의 포인트를 계산한다
     this.clacLinePoints(fields, myPointMap, yourFlag);
     this.clacLinePoints(fields, enemyPointMap, yourFlag === "O" ? "X" : "O");
 
-    // makePositionToPriorityList
+    // 정렬하기 좋은 리스트 구조로 포인트맵데이터를 변환한다
     const list: Array<{
       x: number;
       y: number;
@@ -181,7 +202,7 @@ export default class CkYangPlayer implements OmPlayer {
       })
     );
 
-    // sort
+    // 정렬한다. 똑같은 가중치일경우 내 공격을 우선한다.
     list.sort((a, b) => {
       if (b.point === a.point) {
         if (b.isMine) return 1;
@@ -190,18 +211,7 @@ export default class CkYangPlayer implements OmPlayer {
       return b.point - a.point;
     });
 
-    const printFields = (fields: number[][]): void => {
-      const yMax = fields.length;
-      const xMax = fields[0].length;
-      let line = "";
-      for (const y of fields) {
-        line += y.map((v) => String(v)).join(" ");
-        line += "\n";
-      }
-    };
-    printFields(myPointMap);
-    printFields(enemyPointMap);
-
+    // 정렬된 수 리스트를 리턴하는데 0번째 엘레먼트(최선의 수) 와 점수가 동일한 것을 리턴한다
     return list
       .filter((l) => l.point === list[0].point && l.isMine === list[0].isMine)
       .map((l) => {
@@ -212,6 +222,7 @@ export default class CkYangPlayer implements OmPlayer {
       });
   }
 
+  /** 포인트맵 생성한다 [유틸] */
   public makePointMap(yMax: number, xMax: number): number[][] {
     const pointMap: number[][] = [];
     // init pointMap
@@ -225,6 +236,8 @@ export default class CkYangPlayer implements OmPlayer {
 
     return pointMap;
   }
+
+  /** 점 관점의 가중치를 계산한다 */
   public clacDotPoints(
     fields: Fields,
     pointMap: ReturnType<typeof this.makePointMap>,
@@ -236,6 +249,7 @@ export default class CkYangPlayer implements OmPlayer {
       y.forEach((x, xi) => {
         if (fields[yi][xi] === "") return;
 
+        // 각 방향마다 처리를 한다. 대각선은 점수가 더 높다 대각선은 항상 유리하기 때문
         for (const direction of [
           { x: -1, y: 1 },
           { x: 0, y: 1 },
@@ -264,9 +278,7 @@ export default class CkYangPlayer implements OmPlayer {
   }
 
   /**
-   * 선 포인트 처리
-   *
-   * 이어져 있는것 끝까지 가서 처리
+   * 선 관점의 가중치를 계산한다
    * */
   public clacLinePoints(
     fields: Fields,
@@ -315,21 +327,18 @@ export default class CkYangPlayer implements OmPlayer {
           ] +=
             linePointTargetMeta.mode === "add"
               ? 3 + linePointTargetMeta.count
-              : -3; // *
+              : -3;
           // Math.abs(direction.x) +
           // Math.abs(direction.y) +
           // (linePointTargetMeta.mode === "add" ? 1 : -1);
         } // the end of directions loop
       }
     }
-    // pointMap.forEach((y, yi) =>
-    //   y.forEach((x, xi) => {
 
-    //   })
-    // );
     return;
   }
 
+  /** 선 관점의 가중치를 구한다 */
   public getLinePointTargetMeta(
     fields: Fields,
     initPosition: Position2D,
@@ -372,6 +381,7 @@ export default class CkYangPlayer implements OmPlayer {
     }
   }
 
+  /** 아주 중요한 함수 어이없이 기회를 날리거나 어이없이 패배하는 경우를 제거하기 위해 탄생한 메소드 */
   private runEMERGENCYDefenceAttackSystemTestingToolToWinTheGameAndMoneyBack = (
     fields: string[][],
     targetFlag: "O" | "X",
@@ -398,6 +408,7 @@ export default class CkYangPlayer implements OmPlayer {
     return candidates;
   };
 
+  /** 승리 조건에 만족하는지 확인하는 메소드 */
   private checkWinningCondition = (
     fields: string[][],
     lastPosition: Position2D,
