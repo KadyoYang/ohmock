@@ -56,12 +56,15 @@ const GameBoard: React.FC<{
         await sleep(delayMs);
         if (result.winner) {
           setWinner(result.winner);
+          return;
         }
         if (result.isDraw) {
           setIsDraw(result.isDraw);
+          return;
         }
         if (result.ruleViloator) {
           setIsRuleViolator(true);
+          return;
         }
         setTurn(!turn);
       } catch (err) {
