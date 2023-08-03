@@ -5,59 +5,37 @@ import {
   Position2D,
   OmPlayer,
 } from "./interface";
-
 export default class YschoiPlayerImpl implements OmPlayer {
   getDescription(): PlayerDescription {
     return {
       nickname: "ys",
-      tactics: "화이팅",
+      tactics: "공격은 랜덤, 수비우선",
     };
   }
-
   async dropTheStone(
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
-    const { fields } = fieldsStatus;
+    const { fields, lastStonePosition } = fieldsStatus;
     const otherSideFlag = yourFlag === "O" ? "X" : "O";
-    // console.log(yourFlag);
-    // console.log(fields);
-    // console.log(lastStonePosition);
-
     // 중앙에 돌이 없으면 둔다.
     if (!fields[9][9]) {
       return this.starPoint();
     }
-
     // 반드시 막아야한다.
     const block = this.mustBlock(yourFlag, otherSideFlag, fieldsStatus);
-    console.log(block);
-
     // 너가 놓으려는 자리에 돌이 있니??
     const { x, y } = block.length
       ? { x: block[0].x, y: block[0].y }
-      : this.tt(
+      : this.isExist(
           { x: this.getRandomInt(0, 18), y: this.getRandomInt(0, 18) },
           fieldsStatus
         );
     return { x, y };
   }
-
-  private tt(a: Position2D, fieldsStatus: FieldStatus) {
-    while (true) {
-      const isEx = fieldsStatus.fields[a.x][a.y];
-      if (isEx) {
-        a = { x: this.getRandomInt(0, 18), y: this.getRandomInt(0, 18) };
-      } else {
-        return { x: a.x, y: a.y };
-      }
-    }
-  }
-
   private starPoint() {
     return { x: 9, y: 9 };
   }
-
   private mustBlock(
     yourFlag: "O" | "X",
     otherSideFlag: "O" | "X",
@@ -77,7 +55,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           }
           return val;
         }),
-
       // case2
       // ["O", "O", "", "O", "O"]
       case2: Array(5)
@@ -88,7 +65,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           }
           return val;
         }),
-
       // case3
       // ["", "O", "", "O", "O", ""]
       case3: Array(6)
@@ -99,7 +75,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           }
           return val;
         }),
-
       // case4
       // ["", "O", "O", "", "O", ""]
       case4: Array(6)
@@ -110,7 +85,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           }
           return val;
         }),
-
       // case5
       // ["", "O", "O", "O", "O", "X"]
       case5: Array(6)
@@ -124,7 +98,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           }
           return val;
         }),
-
       // case6
       // ["X", "O", "O", "O", "O", ""]
       case6: Array(6)
@@ -139,7 +112,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
           return val;
         }),
     };
-
     const keys = Object.keys(caseArr);
     for (const key of keys) {
       result.push(...this.mustBlockRowCase(fieldsStatus, caseArr[key], key));
@@ -151,10 +123,8 @@ export default class YschoiPlayerImpl implements OmPlayer {
         ...this.mustBlockDiagonalReverseCase(fieldsStatus, caseArr[key], key)
       );
     }
-
     return result.length ? result : [];
   }
-
   private mustBlockRowCase(
     fieldsStatus: FieldStatus,
     shape: Array<string>,
@@ -173,11 +143,9 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x + 4, y },
           ];
         }
-
         if (shapeToString === currentRow && key === "case2") {
           return [{ x: x + 2, y }];
         }
-
         if (shapeToString === currentRow && key === "case3") {
           return [
             { x, y },
@@ -185,7 +153,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x + 5, y },
           ];
         }
-
         if (shapeToString === currentRow && key === "case4") {
           return [
             { x, y },
@@ -193,11 +160,9 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x + 5, y },
           ];
         }
-
         if (shapeToString === currentRow && key === "case5") {
           return [{ x, y }];
         }
-
         if (shapeToString === currentRow && key === "case6") {
           return [{ x: x + 5, y }];
         }
@@ -205,7 +170,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
     }
     return [];
   }
-
   private mustBlockColumnCase(
     fieldsStatus: FieldStatus,
     shape: Array<string>,
@@ -221,18 +185,15 @@ export default class YschoiPlayerImpl implements OmPlayer {
           arr.push(val);
         }
         const currentColumn = JSON.stringify(arr);
-
         if (shapeToString === currentColumn && key === "case1") {
           return [
             { x, y },
             { x, y: y + 4 },
           ];
         }
-
         if (shapeToString === currentColumn && key === "case2") {
           return [{ x, y: y + 2 }];
         }
-
         if (shapeToString === currentColumn && key === "case3") {
           return [
             { x, y },
@@ -240,7 +201,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x, y: y + 5 },
           ];
         }
-
         if (shapeToString === currentColumn && key === "case4") {
           return [
             { x, y },
@@ -248,11 +208,9 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x, y: y + 5 },
           ];
         }
-
         if (shapeToString === currentColumn && key === "case5") {
           return [{ x, y }];
         }
-
         if (shapeToString === currentColumn && key === "case6") {
           return [{ x, y: y + 5 }];
         }
@@ -260,7 +218,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
     }
     return [];
   }
-
   private mustBlockDiagonalReverseCase(
     fieldsStatus: FieldStatus,
     shape: Array<string>,
@@ -276,18 +233,15 @@ export default class YschoiPlayerImpl implements OmPlayer {
           arr.push(val);
         }
         const currentDiagonalReverse = JSON.stringify(arr);
-
         if (shapeToString === currentDiagonalReverse && key === "case1") {
           return [
             { x, y },
             { x: x - 4, y: y - 4 },
           ];
         }
-
         if (shapeToString === currentDiagonalReverse && key === "case2") {
           return [{ x: x - 2, y: y - 2 }];
         }
-
         if (shapeToString === currentDiagonalReverse && key === "case3") {
           return [
             { x, y },
@@ -295,7 +249,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x - 5, y: y - 5 },
           ];
         }
-
         if (shapeToString === currentDiagonalReverse && key === "case4") {
           return [
             { x, y },
@@ -303,11 +256,9 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x - 5, y: y - 5 },
           ];
         }
-
         if (shapeToString === currentDiagonalReverse && key === "case5") {
           return [{ x, y }];
         }
-
         if (shapeToString === currentDiagonalReverse && key === "case6") {
           return [{ x: x - 5, y: y - 5 }];
         }
@@ -315,7 +266,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
     }
     return [];
   }
-
   private mustBlockDiagonalCase(
     fieldsStatus: FieldStatus,
     shape: Array<string>,
@@ -331,18 +281,15 @@ export default class YschoiPlayerImpl implements OmPlayer {
           arr.push(val);
         }
         const currentDiagonal = JSON.stringify(arr);
-
         if (shapeToString === currentDiagonal && key === "case1") {
           return [
-            { x, y },
-            { x: x + 4, y: y + 4 },
+            { x: x + 1, y: y - 1 },
+            { x: x + 5, y: y + 3 },
           ];
         }
-
         if (shapeToString === currentDiagonal && key === "case2") {
           return [{ x: x + 2, y: y + 2 }];
         }
-
         if (shapeToString === currentDiagonal && key === "case3") {
           return [
             { x, y },
@@ -350,7 +297,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x + 5, y: y + 5 },
           ];
         }
-
         if (shapeToString === currentDiagonal && key === "case4") {
           return [
             { x, y },
@@ -358,11 +304,9 @@ export default class YschoiPlayerImpl implements OmPlayer {
             { x: x + 5, y: y + 5 },
           ];
         }
-
         if (shapeToString === currentDiagonal && key === "case5") {
           return [{ x, y }];
         }
-
         if (shapeToString === currentDiagonal && key === "case6") {
           return [{ x: x + 5, y: y + 5 }];
         }
@@ -370,7 +314,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
     }
     return [];
   }
-
   private isExist(
     expectDropStonPosition: Position2D,
     fieldsStatus: FieldStatus
@@ -378,7 +321,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
     if (
       fieldsStatus.fields[expectDropStonPosition.x][expectDropStonPosition.y]
     ) {
-      console.log("123123123", fieldsStatus);
       return this.isExist(
         {
           x: this.getRandomInt(0, 18),
@@ -392,13 +334,6 @@ export default class YschoiPlayerImpl implements OmPlayer {
       y: expectDropStonPosition.y,
     };
   }
-
-  private limitPoint(x: number, y: number) {
-    if (x > 18 || y > 18 || x < 0 || y < 0) {
-      return;
-    }
-  }
-
   private getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
