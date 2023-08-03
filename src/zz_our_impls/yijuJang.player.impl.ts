@@ -6,13 +6,7 @@ import {
   OmPlayer,
 } from "./interface";
 
-export default class YijuPlayer implements OmPlayer {
-  private opponentFlag: "O" | "X";
-
-  constructor(myFlag: "O" | "X") {
-    this.opponentFlag = myFlag;
-  }
-
+export default class CloneJuPlayer implements OmPlayer {
   public getDescription(): PlayerDescription {
     return {
       nickname: "클론 주",
@@ -76,7 +70,6 @@ export default class YijuPlayer implements OmPlayer {
     let y = point.y + dy * (consecutiveStones + 1);
     let value = consecutiveStones;
 
-    // Bonus for having additional stone nearby
     if (
       x >= 0 &&
       y >= 0 &&
@@ -103,11 +96,18 @@ export default class YijuPlayer implements OmPlayer {
     fieldsStatus: FieldStatus,
     yourFlag: "O" | "X"
   ): Promise<Position2D> {
-    this.opponentFlag = yourFlag === "O" ? "X" : "O";
-
+    const opponentFlag = yourFlag === "O" ? "X" : "O";
     let emptyPoints = this.getEmptyPoints(fieldsStatus.fields);
 
-    // If the board is empty or only one stone is placed in the center, place the stone as close to the center as possible
+    for (let point of emptyPoints) {
+      if (this.canWinPerfectly(point, fieldsStatus.fields, yourFlag)) {
+        return point;
+      }
+      if (this.canWinPerfectly(point, fieldsStatus.fields, opponentFlag)) {
+        return point;
+      }
+    }
+
     if (
       emptyPoints.length >=
       fieldsStatus.fields.length * fieldsStatus.fields.length - 1
@@ -116,7 +116,6 @@ export default class YijuPlayer implements OmPlayer {
       let closestPoint: Position2D = emptyPoints[0];
       let minDistance = this.distanceFromCenter(emptyPoints[0], center);
 
-      // Find the closest empty point to the center
       for (let point of emptyPoints) {
         let distance = this.distanceFromCenter(point, center);
         if (distance < minDistance) {
@@ -134,14 +133,11 @@ export default class YijuPlayer implements OmPlayer {
     let bestPointForOpponent: Position2D = emptyPoints[0];
     let maxPointValueForOpponent = 0;
 
-    // Check each empty point
     for (let point of emptyPoints) {
-      // Check each direction
       for (let dx = -1; dx <= 1; dx++) {
         for (let dy = -1; dy <= 1; dy++) {
           if (dx === 0 && dy === 0) continue;
 
-          // Calculate the point value for you
           let pointValueForYou = this.evaluatePoint(
             point,
             dx,
@@ -150,22 +146,19 @@ export default class YijuPlayer implements OmPlayer {
             yourFlag
           );
 
-          // If this point is better for you, update bestPointForYou and maxPointValueForYou
           if (pointValueForYou > maxPointValueForYou) {
             maxPointValueForYou = pointValueForYou;
             bestPointForYou = point;
           }
 
-          // Calculate the point value for the opponent
           let pointValueForOpponent = this.evaluatePoint(
             point,
             dx,
             dy,
             fieldsStatus.fields,
-            this.opponentFlag
+            opponentFlag
           );
 
-          // If this point is better for the opponent, update bestPointForOpponent and maxPointValueForOpponent
           if (pointValueForOpponent > maxPointValueForOpponent) {
             maxPointValueForOpponent = pointValueForOpponent;
             bestPointForOpponent = point;
@@ -174,9 +167,34 @@ export default class YijuPlayer implements OmPlayer {
       }
     }
 
-    // Decide the next move by comparing the best options for both you and the opponent
     return maxPointValueForYou >= maxPointValueForOpponent
       ? bestPointForYou
       : bestPointForOpponent;
+  }
+
+  private canWinPerfectly(
+    point: Position2D,
+    fields: Fields,
+    flag: "O" | "X"
+  ): boolean {
+    let count = 0;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx === 0 && dy === 0) continue;
+
+        let consecutiveStones = this.countConsecutiveStones(
+          point,
+          dx,
+          dy,
+          fields,
+          flag
+        );
+        if (consecutiveStones === 2) {
+          count++;
+          if (count >= 2) return true;
+        }
+      }
+    }
+    return false;
   }
 }
