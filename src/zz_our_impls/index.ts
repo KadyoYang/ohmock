@@ -6,3 +6,4 @@ export { default as CkYangPlayer } from "./ckyang.player.impl";
 export { default as YijuPlayer } from "./yijuJang.player.impl";
 export { default as JiwonPlayer } from "./jiwon.player.impl";
 export { default as YscPlayer } from "./ysc.player.impl";
+export { default as GoPlayer } from "./gost.player.impl";
